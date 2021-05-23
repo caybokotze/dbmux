@@ -30,3 +30,4 @@ The short and sweet is that Go is great for handling concurrency. In large scale
 
 - Tunnel database requests through a redis cache instance and validate whether the request has been made before. If it is, then the request can be accepted.
 - View the modes that are connected to each other on a browser interface to be able to view the health of the replication cluster.
+- Look at ways of handling database sharding and partitioning for db replication.
