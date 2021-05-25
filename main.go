@@ -1,5 +1,0 @@
-package ramjet
-
-func main() {
-
-}
