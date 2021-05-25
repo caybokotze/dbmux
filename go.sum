@@ -1,2 +1,4 @@
+github.com/arstercz/goconfig v0.0.0-20150123071707-b83f50b64687 h1:g/0pmoV6ftTqLMRVThzi8S1VNiRzjQg/AKm+Y8JrBM0=
+github.com/arstercz/goconfig v0.0.0-20150123071707-b83f50b64687/go.mod h1:URZY2HL6NzKbPFW+DxNxldlj94ooyvVAVyyH+MEd2M8=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=

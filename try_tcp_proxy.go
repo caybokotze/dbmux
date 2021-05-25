@@ -1,17 +1,24 @@
 package main
 
 import (
+	"bytes"
+	"database/sql"
 	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
+
+const timeout = time.Second * 2
+var Bsize uint
+var Verbose bool
+var Dbh *sql.DB
 
 func main() {
 	var bind, backend, logTo string
 	var buffer uint
-	var daemon bool
 	var verbose bool
 	var conf string
 
@@ -19,7 +26,6 @@ func main() {
 	flag.StringVar(&backend, "backend", "127.0.0.1:8003", "backend server ip and port")
 	flag.StringVar(&logTo, "logTo", "stdout", "stdout or syslog")
 	flag.UintVar(&buffer, "buffer", 4096, "buffer size")
-	flag.BoolVar(&daemon, "daemon", false, "run as daemon process")
 	flag.BoolVar(&verbose, "verbose", false, "print verbose sql query")
 	flag.StringVar(&conf, "conf", "", "config file to verify database and record sql query")
 	flag.Parse()
@@ -30,8 +36,8 @@ func main() {
 	if err != nil {
 		log.Printf("Can't get config info, skip insert log to mysql...\n")
 	} else {
-		backend_dsn, _ := get_backend_dsn(conf_fh)
-		Dbh, err = dbh(backend_dsn)
+		backendDsn, _ := get_backend_dsn(conf_fh)
+		Dbh, err = dbh(backendDsn)
 		if err != nil {
 			log.Printf("Can't get database handle, skip insert log to mysql...\n")
 		}
@@ -40,15 +46,14 @@ func main() {
 
 	log.SetOutput(os.Stdout)
 	if logTo == "syslog" {
-		w, err := syslog.New(syslog.LOG_INFO, "portproxy")
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.SetOutput(w)
-	}
-
-	if daemon == true {
-		godaemon.MakeDaemon(&godaemon.DaemonAttr{})
+		var (
+			buf    bytes.Buffer
+			logger = log.New(&buf, "INFO: ", log.Lshortfile)
+			infoF  = func(info string) {
+				_ = logger.Output(2, info)
+			}
+		)
+		infoF("port proxying...")
 	}
 
 	p := New(bind, backend, uint32(buffer))

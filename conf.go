@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/arstercz/goconfig"
+)
+
 func get_config(conf string) (c *goconfig.ConfigFile, err error) {
 	c, err = goconfig.ReadConfigFile(conf)
 	if err != nil {
