@@ -28,7 +28,7 @@ const (
 	comBinlogDump
 	comTableDump
 	comConnectOut
-	comRegiserSlave
+	comRegisterSlave
 	comStmtPrepare
 	comStmtExecute
 	comStmtSendLongData
@@ -55,13 +55,13 @@ func ipPortFromNetAddr(s string) (ip string, port int64) {
 	return
 }
 
-func converToUnixLine(sql string) string {
+func convertToUnixLine(sql string) string {
 	sql = strings.Replace(sql, "\r\n", "\n", -1)
 	sql = strings.Replace(sql, "\r", "\n", -1)
 	return sql
 }
 
-func sql_escape(s string) string {
+func sqlEscape(s string) string {
 	var j int = 0
 	if len(s) == 0 {
 		return ""
@@ -112,7 +112,7 @@ func sql_escape(s string) string {
 }
 
 func proxyLog(src, dst *Conn) {
-	buffer := make([]byte, Bsize)
+	buffer := make([]byte, BSize)
 	var sqlInfo query
 	sqlInfo.client, sqlInfo.cport = ipPortFromNetAddr(src.conn.RemoteAddr().String())
 	sqlInfo.server, sqlInfo.sport = ipPortFromNetAddr(dst.conn.RemoteAddr().String())
@@ -166,11 +166,11 @@ func proxyLog(src, dst *Conn) {
 			if strings.EqualFold(sqlInfo.sqlType, "Quit") {
 				sqlInfo.sqlString = "user quit"
 			} else {
-				sqlInfo.sqlString = converToUnixLine(sql_escape(string(buffer[5:n])))
+				sqlInfo.sqlString = convertToUnixLine(sqlEscape(string(buffer[5:n])))
 			}
 
 			if !strings.EqualFold(sqlInfo.sqlType, "") && Dbh != nil {
-				insertlog(Dbh, &sqlInfo)
+				InsertLog(Dbh, &sqlInfo)
 			}
 
 		}

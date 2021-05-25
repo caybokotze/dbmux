@@ -36,7 +36,7 @@ func ExecQuery(db *sql.DB, q string) (sql.Result, error) {
 	return db.Exec(q)
 }
 
-func insertlog(db *sql.DB, t *query) bool {
+func InsertLog(db *sql.DB, t *query) bool {
 	insertSql := `
 	insert into query_log(bindport, client, client_port, server, server_port, sql_type, 
 	sql_string, create_time) values (%d, '%s', %d, '%s', %d, '%s', '%s', now())

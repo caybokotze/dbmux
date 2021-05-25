@@ -12,7 +12,7 @@ import (
 )
 
 const timeout = time.Second * 2
-var Bsize uint
+var BSize uint
 var Verbose bool
 var Dbh *sql.DB
 
@@ -29,14 +29,14 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "print verbose sql query")
 	flag.StringVar(&conf, "conf", "", "config file to verify database and record sql query")
 	flag.Parse()
-	Bsize = buffer
+	BSize = buffer
 	Verbose = verbose
 
-	conf_fh, err := get_config(conf)
+	confFh, err := getConfig(conf)
 	if err != nil {
 		log.Printf("Can't get config info, skip insert log to mysql...\n")
 	} else {
-		backendDsn, _ := get_backend_dsn(conf_fh)
+		backendDsn, _ := getBackendDsn(confFh)
 		Dbh, err = dbh(backendDsn)
 		if err != nil {
 			log.Printf("Can't get database handle, skip insert log to mysql...\n")
