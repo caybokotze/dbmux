@@ -1,4 +1,4 @@
-# DbMux
+# DbMux *database multiplexer*
 _Distributed reverse proxy dbms load balancing multiplexer_
 
 ## A short explanation
