@@ -4,7 +4,7 @@ _Distributed reverse proxy dbms load balancing multiplexer_
 ## A short explanation
 Ramjet is a database reverse proxy. (Sort of) Ramjet is a tool to manage distributed clustered database environments, which could be well suited for large scale distributed systems. It offers you the ability to setup and manage your own database clusters and to replicate data across different data sources. It also acts as a way to offer a single source of truth in distributed application architectures and will do some work to speed up frequest database queries with the help of Redis.
 
-## The idea behind ramjet
+## The idea behind dbmux
 
 Instead of targeting your db of choice directly, what you effectively do is execute queries against the service instead as a database proxy. From there you can then manage what actually happens with the request to the db. The service also has built in support for Redis, so that could help speed up queries that are made very frequently.
 
