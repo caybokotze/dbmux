@@ -17,17 +17,14 @@ var Verbose bool
 var Dbh *sql.DB
 
 func main() {
-	var bind, backend, logTo string
-	var buffer uint
-	var verbose bool
-	var conf string
+	Initialise()
+}
 
-	flag.StringVar(&bind, "bind", ":8002", "locate ip and port")
-	flag.StringVar(&backend, "backend", "127.0.0.1:8003", "backend server ip and port")
-	flag.StringVar(&logTo, "logTo", "stdout", "stdout or syslog")
-	flag.UintVar(&buffer, "buffer", 4096, "buffer size")
-	flag.BoolVar(&verbose, "verbose", false, "print verbose sql query")
-	flag.StringVar(&conf, "conf", "", "config file to verify database and record sql query")
+func Initialise() {
+	bindingPort := flag.Uint("bind-to", 3602, "Specify the port you will be accessing from")
+	proxyPort := flag.Uint("proxy-to", 3600, "Specify the port where the current server instance is running")
+	verbosity := flag.Bool("enable-verbosity", false, "Select whether or not verbosity is enabled")
+
 	flag.Parse()
 	BSize = buffer
 	Verbose = verbose

@@ -1,0 +1,9 @@
+{
+  "name": "Db Mux Configuration file",
+  "author": "Caybo Kotze",
+  "configuration": {
+    "db-user": "sqltracking",
+    "db-user-password": "sqltracking",
+    "db-port": 3306
+  }
+}
