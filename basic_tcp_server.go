@@ -36,12 +36,12 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		if strings.TrimSpace(string(netData)) == "STOP" {
+		if strings.TrimSpace(netData) == "STOP" {
 			fmt.Println("Exiting TCP server!")
 			return
 		}
 
-		fmt.Print("-> ", string(netData))
+		fmt.Print("-> ", netData)
 		t := time.Now()
 		myTime := t.Format(time.RFC3339) + "\n"
 		_, _ = c.Write([]byte(myTime))

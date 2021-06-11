@@ -39,7 +39,7 @@ func CreateNewProxy(proxyPort, hostPort, bufferSize uint, size uint32) *Proxy {
 
 /* - Proxy struct helpers - */
 
-func (t *Proxy) pipeTCPConnection(dst, src *Conn, c chan int64, tag string) {
+func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string) {
 	defer func() {
 		dst.CloseWrite()
 		dst.CloseRead()
@@ -72,7 +72,7 @@ func (t *Proxy) transport(conn net.Conn) {
 	var readBytes, writeBytes int64
 
 	atomic.AddInt32(&t.sessionsCount, 1)
-	var bindConn, backendConn *Conn
+	var bindConn, backendConn *Connection
 	bindConn = NewTcpConnection(conn, t.pool)
 	backendConn = NewTcpConnection(conn2, t.pool)
 

@@ -63,7 +63,7 @@ func convertToUnixLine(sql string) string {
 }
 
 func sqlEscape(s string) string {
-	var j int = 0
+	var j = 0
 	if len(s) == 0 {
 		return ""
 	}
@@ -112,12 +112,12 @@ func sqlEscape(s string) string {
 	return string(desc[0:j])
 }
 
-func ProxyLog(src, dst *Conn, bufferSize uint) {
+func ProxyLog(src, dst *Connection, bufferSize uint) {
 	buffer := make([]byte, bufferSize)
 	var sqlInfo query
-	sqlInfo.client, sqlInfo.cport = ipPortFromNetAddr(src.conn.RemoteAddr().String())
-	sqlInfo.server, sqlInfo.sport = ipPortFromNetAddr(dst.conn.RemoteAddr().String())
-	_, sqlInfo.bindPort = ipPortFromNetAddr(src.conn.LocalAddr().String())
+	sqlInfo.client, sqlInfo.cport = ipPortFromNetAddr(src.connection.RemoteAddr().String())
+	sqlInfo.server, sqlInfo.sport = ipPortFromNetAddr(dst.connection.RemoteAddr().String())
+	_, sqlInfo.bindPort = ipPortFromNetAddr(src.connection.LocalAddr().String())
 
 	for {
 		n, err := src.Read(buffer)

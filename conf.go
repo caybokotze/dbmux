@@ -2,26 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/arstercz/goconfig"
 	"io/ioutil"
 	"os"
 )
-
-func getConfig(conf string) (c *goconfig.ConfigFile, err error) {
-	c, err = goconfig.ReadConfigFile(conf)
-	if err != nil {
-		return c, err
-	}
-	return c, nil
-}
-
-func getBackendDsn(c *goconfig.ConfigFile) (dsn string, err error) {
-	dsn, err = c.GetString("backend", "dsn")
-	if err != nil {
-		return dsn, err
-	}
-	return dsn, nil
-}
 
 func GetConfiguration() (config Configuration, err error) {
 	jsonFile, err := os.Open("config.json")
@@ -30,9 +13,9 @@ func GetConfiguration() (config Configuration, err error) {
 	}
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var configuration Configuration
-	_ = json.Unmarshal(byteValue, &configuration)
-	return configuration, nil
+	var configurationFile ConfigurationFile
+	_ = json.Unmarshal(byteValue, &configurationFile)
+	return configurationFile.Configuration, nil
 }
 
 type Configuration struct {
