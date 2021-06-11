@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/arstercz/goconfig"
 	"io/ioutil"
 	"os"
@@ -24,22 +23,24 @@ func getBackendDsn(c *goconfig.ConfigFile) (dsn string, err error) {
 	return dsn, nil
 }
 
-func GetConfiguration() Configuration {
+func GetConfiguration() (config Configuration, err error) {
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
-		fmt.Println(err)
+		return Configuration{}, err
 	}
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	var configuration Configuration
 	_ = json.Unmarshal(byteValue, &configuration)
-	return configuration
+	return configuration, nil
 }
 
 type Configuration struct {
 	DbUser string `json:"db-user"`
 	DbPassword string `json:"db-password"`
-	DbPort string `json:"db-port"`
+	DbPort uint `json:"db-port"`
+	ProxyPort uint `json:"proxy-port"`
+	DbBuffer uint `json:"db-buffer"`
 }
 
 type ConfigurationFile struct {

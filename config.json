@@ -4,6 +4,8 @@
   "configuration": {
     "db-user": "sqltracking",
     "db-user-password": "sqltracking",
-    "db-port": 3306
+    "db-port": 3306,
+    "db-buffer": 4096,
+    "proxy-port": 3307
   }
 }

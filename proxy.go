@@ -4,43 +4,46 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 )
 
 type Proxy struct {
-	bind, backend *net.TCPAddr
-	sessionsCount int32
-	pool *recycler
+	proxyTcp, databaseTcp *net.TCPAddr
+	sessionsCount     int32
+	pool              *recycler
 }
 
-func New(bind, backend string, size uint32) *Proxy {
-	a1, err := net.ResolveTCPAddr("tcp", bind)
+func CreateNewProxy(proxyPort, databasePort uint, size uint32) *Proxy {
+	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(proxyPort)))
 	if err != nil {
-		log.Fatalln("resolve bind error:", err)
+		log.Fatalln("resolve proxyTcp error:", err)
 	}
 
-	a2, err := net.ResolveTCPAddr("tcp", backend)
+	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(databasePort)))
 	if err != nil {
 		log.Fatalln("resolve backend error:", err)
 	}
 
 	return &Proxy{
-		bind:          a1,
-		backend:       a2,
+		proxyTcp: proxyTcpAddress,
+		databaseTcp: databaseTcpAddress,
 		sessionsCount: 0,
-		pool:          NewRecycler(size),
+		pool: NewRecycler(size),
 	}
 }
 
-func (t *Proxy) pipe(dst, src *Conn, c chan int64, tag string) {
+/* - Proxy struct helpers - */
+
+func (t *Proxy) pipeTCPConnection(dst, src *Conn, c chan int64, tag string) {
 	defer func() {
 		dst.CloseWrite()
 		dst.CloseRead()
 	}()
 	if strings.EqualFold(tag, "send") {
-		proxyLog(src, dst)
+		ProxyLog(src, dst)
 		c <- 0
 	} else {
 		n, err := io.Copy(dst, src)
@@ -53,7 +56,7 @@ func (t *Proxy) pipe(dst, src *Conn, c chan int64, tag string) {
 
 func (t *Proxy) transport(conn net.Conn) {
 	start := time.Now()
-	conn2, err := net.DialTCP("tcp", nil, t.backend)
+	conn2, err := net.DialTCP("tcp", nil, t.databaseTcp)
 	if err != nil {
 		log.Print(err)
 		return
@@ -71,8 +74,8 @@ func (t *Proxy) transport(conn net.Conn) {
 	bindConn = NewConn(conn, t.pool)
 	backendConn = NewConn(conn2, t.pool)
 
-	go t.pipe(backendConn, bindConn, writeChan, "send")
-	go t.pipe(bindConn, backendConn, readChan, "receive")
+	go t.pipeTCPConnection(backendConn, bindConn, writeChan, "send")
+	go t.pipeTCPConnection(bindConn, backendConn, readChan, "receive")
 
 	readBytes = <-readChan
 	writeBytes = <-writeChan
@@ -82,8 +85,8 @@ func (t *Proxy) transport(conn net.Conn) {
 	atomic.AddInt32(&t.sessionsCount, -1)
 }
 
-func (t *Proxy) Start() {
-	ln, err := net.ListenTCP("tcp", t.bind)
+func (t *Proxy) StartTcpProxying() {
+	ln, err := net.ListenTCP("tcp", t.proxyTcp)
 	if err != nil {
 		log.Fatal(err)
 	}

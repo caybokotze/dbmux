@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+//read more client-server protocol from http://dev.mysql.com/doc/internals/en/text-protocol.html
 const (
 	comQuit byte = iota + 1
 	comInitDB
@@ -111,7 +112,7 @@ func sqlEscape(s string) string {
 	return string(desc[0:j])
 }
 
-func proxyLog(src, dst *Conn) {
+func ProxyLog(src, dst *Conn) {
 	buffer := make([]byte, BSize)
 	var sqlInfo query
 	sqlInfo.client, sqlInfo.cport = ipPortFromNetAddr(src.conn.RemoteAddr().String())

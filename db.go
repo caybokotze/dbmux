@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func dbh(dsn string) (db *sql.DB, err error) {
+func databaseHost(dsn string) (db *sql.DB, err error) {
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return db, err
