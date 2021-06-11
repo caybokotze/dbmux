@@ -112,8 +112,8 @@ func sqlEscape(s string) string {
 	return string(desc[0:j])
 }
 
-func ProxyLog(src, dst *Conn) {
-	buffer := make([]byte, BSize)
+func ProxyLog(src, dst *Conn, bufferSize uint) {
+	buffer := make([]byte, bufferSize)
 	var sqlInfo query
 	sqlInfo.client, sqlInfo.cport = ipPortFromNetAddr(src.conn.RemoteAddr().String())
 	sqlInfo.server, sqlInfo.sport = ipPortFromNetAddr(dst.conn.RemoteAddr().String())
@@ -160,7 +160,7 @@ func ProxyLog(src, dst *Conn) {
 			default:
 			}
 
-			if Verbose {
+			if VerbosityEnabled {
 				log.Print(verboseStr)
 			}
 
@@ -170,8 +170,8 @@ func ProxyLog(src, dst *Conn) {
 				sqlInfo.sqlString = convertToUnixLine(sqlEscape(string(buffer[5:n])))
 			}
 
-			if !strings.EqualFold(sqlInfo.sqlType, "") && Dbh != nil {
-				InsertLog(Dbh, &sqlInfo)
+			if !strings.EqualFold(sqlInfo.sqlType, "") && DatabaseHost != nil {
+				InsertLog(DatabaseHost, &sqlInfo)
 			}
 
 		}

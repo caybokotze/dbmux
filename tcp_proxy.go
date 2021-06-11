@@ -22,7 +22,7 @@ var DatabaseHost *sql.DB
 var VerbosityEnabled = false
 
 func Initialise() {
-	bindingPort := flag.Uint("proxyTcp-to", 3602, "Specify the port you will be accessing from")
+	bindingPort := flag.Uint("bind-to", 3601, "Specify the port you will be accessing from")
 	proxyPort := flag.Uint("proxy-to", 3600, "Specify the port where the current server instance is running")
 	flag.BoolVar(&VerbosityEnabled, "enable-verbosity", false, "Select whether or not verbosity is enabled")
 	flag.Parse()

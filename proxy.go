@@ -12,17 +12,18 @@ import (
 
 type Proxy struct {
 	proxyTcp, databaseTcp *net.TCPAddr
-	sessionsCount     int32
-	pool              *recycler
+	sessionsCount         int32
+	pool                  *recycler
+	bufferSize            uint
 }
 
-func CreateNewProxy(proxyPort, databasePort uint, size uint32) *Proxy {
+func CreateNewProxy(proxyPort, hostPort, bufferSize uint, size uint32) *Proxy {
 	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(proxyPort)))
 	if err != nil {
 		log.Fatalln("resolve proxyTcp error:", err)
 	}
 
-	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(databasePort)))
+	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(hostPort)))
 	if err != nil {
 		log.Fatalln("resolve backend error:", err)
 	}
@@ -32,6 +33,7 @@ func CreateNewProxy(proxyPort, databasePort uint, size uint32) *Proxy {
 		databaseTcp: databaseTcpAddress,
 		sessionsCount: 0,
 		pool: NewRecycler(size),
+		bufferSize: bufferSize,
 	}
 }
 
@@ -43,7 +45,7 @@ func (t *Proxy) pipeTCPConnection(dst, src *Conn, c chan int64, tag string) {
 		dst.CloseRead()
 	}()
 	if strings.EqualFold(tag, "send") {
-		ProxyLog(src, dst)
+		ProxyLog(src, dst, t.bufferSize)
 		c <- 0
 	} else {
 		n, err := io.Copy(dst, src)
