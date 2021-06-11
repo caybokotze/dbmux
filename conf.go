@@ -39,8 +39,10 @@ type Configuration struct {
 	DbUser string `json:"db-user"`
 	DbPassword string `json:"db-password"`
 	DbPort uint `json:"db-port"`
+	DbHost string `json:"db-host"`
 	ProxyPort uint `json:"proxy-port"`
 	DbBuffer uint `json:"db-buffer"`
+	DbSchema string `json:"db-schema"`
 }
 
 type ConfigurationFile struct {

@@ -28,7 +28,15 @@ func Initialise() {
 	flag.Parse()
 
 	log.SetOutput(os.Stdout)
-	config := constructConfiguration(bindingPort, proxyPort)
+	config, err := fetchConfiguration(bindingPort, proxyPort)
+	if err != nil {
+		log.Fatal("Configuration could not be found for this service, please make sure you have a valid configuration file.")
+	}
+
+	DatabaseHost, err = databaseHost(config)
+	if err != nil {
+		log.Fatal("Count not create a connection to the database")
+	}
 
 	p := CreateNewProxy(
 		config.ProxyPort,
@@ -39,11 +47,11 @@ func Initialise() {
 	waitForSignal()
 }
 
-func constructConfiguration(bindingPort, proxyPort *uint) Configuration {
+func fetchConfiguration(bindingPort, proxyPort *uint) (configuration Configuration, err error) {
 	config, err := GetConfiguration()
 	if err != nil {
 		log.Println("Error fetching configuration")
-		return Configuration{}
+		return Configuration{}, err
 	}
 	if *proxyPort != 0 {
 		config.ProxyPort = *proxyPort
@@ -51,7 +59,7 @@ func constructConfiguration(bindingPort, proxyPort *uint) Configuration {
 	if *bindingPort == 0 {
 		config.DbPort = *bindingPort
 	}
-	return config
+	return config, nil
 }
 
 func waitForSignal() {

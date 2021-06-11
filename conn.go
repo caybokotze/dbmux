@@ -10,7 +10,7 @@ type Conn struct {
 	pool *recycler
 }
 
-func NewConn(conn net.Conn, pool *recycler) *Conn {
+func NewTcpConnection(conn net.Conn, pool *recycler) *Conn {
 	return &Conn{
 		conn: conn,
 		pool: pool,

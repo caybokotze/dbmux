@@ -71,8 +71,8 @@ func (t *Proxy) transport(conn net.Conn) {
 
 	atomic.AddInt32(&t.sessionsCount, 1)
 	var bindConn, backendConn *Conn
-	bindConn = NewConn(conn, t.pool)
-	backendConn = NewConn(conn2, t.pool)
+	bindConn = NewTcpConnection(conn, t.pool)
+	backendConn = NewTcpConnection(conn2, t.pool)
 
 	go t.pipeTCPConnection(backendConn, bindConn, writeChan, "send")
 	go t.pipeTCPConnection(bindConn, backendConn, readChan, "receive")

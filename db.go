@@ -7,8 +7,14 @@ import (
 	"log"
 )
 
-func databaseHost(dsn string) (db *sql.DB, err error) {
-	db, err = sql.Open("mysql", dsn)
+func databaseHost(configuration Configuration) (db *sql.DB, err error) {
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+		configuration.DbUser,
+		configuration.DbPassword,
+		configuration.DbHost,
+		configuration.DbSchema)
+
+	db, err = sql.Open("mysql", connectionString)
 	if err != nil {
 		return db, err
 	}
@@ -16,21 +22,21 @@ func databaseHost(dsn string) (db *sql.DB, err error) {
 }
 
 func Query(db *sql.DB, q string) (*sql.Rows, error) {
-	if Verbose {
+	if VerbosityEnabled {
 		log.Printf("Query: %s\n", q)
 	}
 	return db.Query(q)
 }
 
 func QueryRow(db *sql.DB, q string) *sql.Row {
-	if Verbose {
+	if VerbosityEnabled {
 		log.Printf("Query: %s", q)
 	}
 	return db.QueryRow(q)
 }
 
 func ExecQuery(db *sql.DB, q string) (sql.Result, error) {
-	if Verbose {
+	if VerbosityEnabled {
 		log.Printf("ExecQuery: %s\n", q)
 	}
 	return db.Exec(q)

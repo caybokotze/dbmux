@@ -4,8 +4,11 @@
   "configuration": {
     "db-user": "sqltracking",
     "db-user-password": "sqltracking",
+    "db-host": "127.0.0.1",
     "db-port": 3306,
     "db-buffer": 4096,
+    "db-schema": "sql_workflow",
+    "thread-pool-count": 50,
     "proxy-port": 3307
   }
 }
