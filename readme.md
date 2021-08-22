@@ -1,5 +1,5 @@
 # DbMux - *database multiplexer*
-_Distributed reverse proxy dbms load balancing multiplexer_
+_A distributed reverse proxy dbms load balancing multiplexer as a service._
 
 ## What does DbMux currently do?
 DbMux currently can act as a proxy for your mysql connection. So if you want to tunnel your mysql connection through from 3306 to 3308 on the server you are running mysql, you can use dbmux to do that.
