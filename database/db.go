@@ -6,7 +6,6 @@ import (
 	"github.com/caybokotze/dbmux/configuration"
 	"github.com/caybokotze/dbmux/logging"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 )
 
 func CreateConnectionToDbHost(configuration configuration.Configuration) (db *sql.DB, err error) {
@@ -32,9 +31,6 @@ func QueryRow(db *sql.DB, q string) *sql.Row {
 }
 
 func ExecQuery(db *sql.DB, q string) (sql.Result, error) {
-	if main.VerbosityEnabled {
-		log.Printf("ExecQuery: %s\n", q)
-	}
 	return db.Exec(q)
 }
 

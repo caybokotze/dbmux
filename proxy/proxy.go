@@ -25,6 +25,7 @@ type Arguments struct {
 	HostPort       uint
 	BufferSize     uint
 	ThreadPoolSize uint32
+	VerbosityEnabled bool
 }
 
 func CreateNewProxy(arguments Arguments) *Proxy {

@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/caybokotze/dbmux/database"
 	"github.com/caybokotze/dbmux/tcp"
@@ -8,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-
 
 type Query struct {
 	BindPort  int64
@@ -84,15 +83,23 @@ func sqlEscape(s string) string {
 	return string(desc[0:j])
 }
 
-func ProxyLog(source, destination *tcp.Connection, bufferSize uint) {
-	buffer := make([]byte, bufferSize)
+type ProxyLogConfiguration struct {
+	source *tcp.Connection
+	destination *tcp.Connection
+	bufferSize uint
+	verbosity bool
+	databaseHost *sql.DB
+}
+
+func ProxyLog(config ProxyLogConfiguration) {
+	buffer := make([]byte, config.bufferSize)
 	var sqlInfo Query
-	sqlInfo.ClientIP, sqlInfo.ClientPort = ipPortFromNetAddr(source.Connection.RemoteAddr().String())
-	sqlInfo.ServerIP, sqlInfo.ServerPort = ipPortFromNetAddr(destination.Connection.RemoteAddr().String())
-	_, sqlInfo.BindPort = ipPortFromNetAddr(source.Connection.LocalAddr().String())
+	sqlInfo.ClientIP, sqlInfo.ClientPort = ipPortFromNetAddr(config.source.Connection.RemoteAddr().String())
+	sqlInfo.ServerIP, sqlInfo.ServerPort = ipPortFromNetAddr(config.destination.Connection.RemoteAddr().String())
+	_, sqlInfo.BindPort = ipPortFromNetAddr(config.source.Connection.LocalAddr().String())
 
 	for {
-		n, err := source.Read(buffer)
+		n, err := config.source.Read(buffer)
 		if err != nil {
 			return
 		}
@@ -129,7 +136,7 @@ func ProxyLog(source, destination *tcp.Connection, bufferSize uint) {
 			default:
 			}
 
-			if sourceverbosityEnabled {
+			if config.verbosity {
 				log.Print(verboseStr)
 			}
 
@@ -139,12 +146,12 @@ func ProxyLog(source, destination *tcp.Connection, bufferSize uint) {
 				sqlInfo.SqlString = convertToUnixLine(sqlEscape(string(buffer[5:n])))
 			}
 
-			if !strings.EqualFold(sqlInfo.SqlType, "") && DatabaseHost != nil {
-				database.InsertLog(main.DatabaseHost, &sqlInfo)
+			if !strings.EqualFold(sqlInfo.SqlType, "") && config.databaseHost != nil {
+				database.InsertLog(config.databaseHost, &sqlInfo)
 			}
 		}
 
-		_, err = destination.Write(buffer[0:n])
+		_, err = config.destination.Write(buffer[0:n])
 		if err != nil {
 			return
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "bytes"
-	"database/sql"
 	_ "database/sql"
 	"flag"
 	"github.com/caybokotze/dbmux/configuration"
@@ -21,7 +20,6 @@ func main() {
 	Initialise()
 }
 
-var DatabaseHost *sql.DB
 var verbosityEnabled = false
 
 func Initialise() {
@@ -36,7 +34,7 @@ func Initialise() {
 		log.Fatal("Configuration could not be found for this service, please make sure you have a valid configuration file.")
 	}
 
-	DatabaseHost, err = database.CreateConnectionToDbHost(config)
+	_, err = database.CreateConnectionToDbHost(config)
 
 	if err != nil {
 		log.Fatal("Count not create a connection to the database")
@@ -46,7 +44,8 @@ func Initialise() {
 		ProxyPort:      *proxyPort,
 		HostPort:       *bindingPort,
 		BufferSize:     0,
-		threadPoolSize: 0,
+		ThreadPoolSize: 50,
+		VerbosityEnabled: verbosityEnabled,
 	})
 
 	log.Println("portproxy started.")
