@@ -1,4 +1,4 @@
-package main
+package configuration
 
 import (
 	"encoding/json"
@@ -13,23 +13,24 @@ func GetConfiguration() (config Configuration, err error) {
 	}
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var configurationFile ConfigurationFile
+	var configurationFile File
 	_ = json.Unmarshal(byteValue, &configurationFile)
 	return configurationFile.Configuration, nil
 }
 
 type Configuration struct {
-	DbUser string `json:"db-user"`
-	DbPassword string `json:"db-password"`
-	DbPort uint `json:"db-port"`
-	DbHost string `json:"db-host"`
-	ProxyPort uint `json:"proxy-port"`
-	DbBuffer uint `json:"db-buffer"`
-	DbSchema string `json:"db-schema"`
+	DbUser           string `json:"db-user"`
+	DbPassword       string `json:"db-password"`
+	DbPort           uint   `json:"db-port"`
+	DbHostIp         string `json:"db-host"`
+	ProxyPort        uint   `json:"proxy-port"`
+	DbBuffer         uint   `json:"db-buffer"`
+	DbSchema         string `json:"db-schema"`
+	VerbosityEnabled bool   `json:"verbosity"`
 }
 
-type ConfigurationFile struct {
+type File struct {
 	Name          string        `json:"name"`
 	Author        string        `json:"author"`
-	Configuration Configuration `json:"configuration"`
+	Configuration Configuration `json:"proxy-configuration"`
 }

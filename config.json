@@ -1,7 +1,7 @@
 {
   "name": "Db Mux Configuration file",
   "author": "Caybo Kotze",
-  "configuration": {
+  "proxy-configuration": {
     "db-user": "sqltracking",
     "db-user-password": "sqltracking",
     "db-host": "127.0.0.1",

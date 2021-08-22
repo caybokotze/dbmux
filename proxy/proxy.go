@@ -1,6 +1,8 @@
-package main
+package proxy
 
 import (
+	"github.com/caybokotze/dbmux/logging"
+	"github.com/caybokotze/dbmux/tcp"
 	"io"
 	"log"
 	"net"
@@ -11,41 +13,49 @@ import (
 )
 
 type Proxy struct {
-	proxyTcp, databaseTcp *net.TCPAddr
+	proxyTcp,
+	databaseTcp *net.TCPAddr
 	sessionsCount         int32
-	pool                  *recycler
+	pool                  *Recycler
 	bufferSize            uint
 }
 
-func CreateNewProxy(proxyPort, hostPort, bufferSize uint, size uint32) *Proxy {
-	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(proxyPort)))
+type Arguments struct {
+	ProxyPort      uint
+	HostPort       uint
+	BufferSize     uint
+	ThreadPoolSize uint32
+}
+
+func CreateNewProxy(arguments Arguments) *Proxy {
+	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(arguments.ProxyPort)))
 	if err != nil {
 		log.Fatalln("resolve proxyTcp error:", err)
 	}
 
-	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(hostPort)))
+	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(arguments.HostPort)))
 	if err != nil {
 		log.Fatalln("resolve backend error:", err)
 	}
 
 	return &Proxy{
-		proxyTcp: proxyTcpAddress,
-		databaseTcp: databaseTcpAddress,
+		proxyTcp:      proxyTcpAddress,
+		databaseTcp:   databaseTcpAddress,
 		sessionsCount: 0,
-		pool: NewRecycler(size),
-		bufferSize: bufferSize,
+		pool:          newRecycler(arguments.ThreadPoolSize),
+		bufferSize:    arguments.BufferSize,
 	}
 }
 
 /* - Proxy struct helpers - */
 
-func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string) {
+func (t *Proxy) pipeTCPConnection(dst, src *tcp.Connection, c chan int64, tag string) {
 	defer func() {
 		dst.CloseWrite()
 		dst.CloseRead()
 	}()
 	if strings.EqualFold(tag, "send") {
-		ProxyLog(src, dst, t.bufferSize)
+		logging.ProxyLog(src, dst, t.bufferSize)
 		c <- 0
 	} else {
 		n, err := io.Copy(dst, src)
@@ -56,28 +66,28 @@ func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string
 	}
 }
 
-func (t *Proxy) transport(conn net.Conn) {
+func (t *Proxy) transport(proxy net.Conn) {
 	start := time.Now()
-	conn2, err := net.DialTCP("tcp", nil, t.databaseTcp)
+	databaseConnection, err := net.DialTCP("tcp", nil, t.databaseTcp)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 	connectTime := time.Now().Sub(start)
-	log.Printf("proxy: %s ==> %s", conn2.LocalAddr().String(),
-		conn2.RemoteAddr().String())
+	log.Printf("proxy: %s ==> %s", databaseConnection.LocalAddr().String(),
+		databaseConnection.RemoteAddr().String())
 	start = time.Now()
 	readChan := make(chan int64)
 	writeChan := make(chan int64)
 	var readBytes, writeBytes int64
 
 	atomic.AddInt32(&t.sessionsCount, 1)
-	var bindConn, backendConn *Connection
-	bindConn = NewTcpConnection(conn, t.pool)
-	backendConn = NewTcpConnection(conn2, t.pool)
+	var serverConnection, proxyConnection *tcp.Connection
+	serverConnection = tcp.NewTcpConnection(proxy, t.pool)
+	proxyConnection = tcp.NewTcpConnection(databaseConnection, t.pool)
 
-	go t.pipeTCPConnection(backendConn, bindConn, writeChan, "send")
-	go t.pipeTCPConnection(bindConn, backendConn, readChan, "receive")
+	go t.pipeTCPConnection(serverConnection, proxyConnection, writeChan, "send")
+	go t.pipeTCPConnection(proxyConnection, serverConnection, readChan, "receive")
 
 	readBytes = <-readChan
 	writeBytes = <-writeChan

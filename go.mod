@@ -1,4 +1,4 @@
-module github.com/caybokotze/ramjet
+module github.com/caybokotze/dbmux
 
 go 1.16
 
