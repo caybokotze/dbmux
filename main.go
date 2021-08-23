@@ -4,17 +4,14 @@ import (
 	_ "bytes"
 	_ "database/sql"
 	"flag"
-	"github.com/caybokotze/dbmux/configuration"
+	"github.com/caybokotze/dbmux/config"
 	"github.com/caybokotze/dbmux/database"
 	"github.com/caybokotze/dbmux/proxy"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
-
-const timeout = time.Second * 2
 
 func main() {
 	Initialise()
@@ -31,7 +28,7 @@ func Initialise() {
 	log.SetOutput(os.Stdout)
 	config, err := fetchConfiguration(bindingPort, proxyPort)
 	if err != nil {
-		log.Fatal("Configuration could not be found for this service, please make sure you have a valid configuration file.")
+		log.Fatal("Configuration could not be found for this service, please make sure you have a valid config file.")
 	}
 
 	_, err = database.CreateConnectionToDbHost(config)
@@ -53,19 +50,19 @@ func Initialise() {
 	waitForSignal()
 }
 
-func fetchConfiguration(bindingPort, proxyPort *uint)(conf configuration.Configuration, err error) {
-	config, err := configuration.GetConfiguration()
+func fetchConfiguration(bindingPort, proxyPort *uint)(configuration config.Configuration, err error) {
+	conf, err := config.GetConfiguration()
 	if err != nil {
-		log.Println("Error fetching configuration")
-		return configuration.Configuration{}, err
+		log.Println("Error fetching config")
+		return config.Configuration{}, err
 	}
 	if *proxyPort != 0 {
-		config.ProxyPort = *proxyPort
+		conf.ProxyPort = *proxyPort
 	}
 	if *bindingPort == 0 {
-		config.DbPort = *bindingPort
+		conf.DbPort = *bindingPort
 	}
-	return config, nil
+	return conf, nil
 }
 
 func waitForSignal() {

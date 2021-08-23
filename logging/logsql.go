@@ -11,13 +11,13 @@ import (
 )
 
 type Query struct {
-	BindPort  int64
-	ClientIP    string
-	ClientPort     int64
-	ServerIP    string
-	ServerPort     int64
-	SqlType   string
-	SqlString string
+	BindPort   int64
+	ClientIP   string
+	ClientPort int64
+	ServerIP   string
+	ServerPort int64
+	SqlType    string
+	SqlString  string
 }
 
 func ipPortFromNetAddr(s string) (ip string, port int64) {
@@ -84,10 +84,10 @@ func sqlEscape(s string) string {
 }
 
 type ProxyLogConfiguration struct {
-	source *tcp.Connection
-	destination *tcp.Connection
-	bufferSize uint
-	verbosity bool
+	source       *tcp.Connection
+	destination  *tcp.Connection
+	bufferSize   uint
+	verbosity    bool
 	databaseHost *sql.DB
 }
 

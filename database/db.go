@@ -3,12 +3,12 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/caybokotze/dbmux/configuration"
+	"github.com/caybokotze/dbmux/config"
 	"github.com/caybokotze/dbmux/logging"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func CreateConnectionToDbHost(configuration configuration.Configuration) (db *sql.DB, err error) {
+func CreateConnectionToDbHost(configuration config.Configuration) (db *sql.DB, err error) {
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
 		configuration.DbUser,
 		configuration.DbPassword,

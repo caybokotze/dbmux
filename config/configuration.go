@@ -1,4 +1,4 @@
-package configuration
+package config
 
 import (
 	"encoding/json"
@@ -32,5 +32,5 @@ type Configuration struct {
 type File struct {
 	Name          string        `json:"name"`
 	Author        string        `json:"author"`
-	Configuration Configuration `json:"proxy-configuration"`
+	Configuration Configuration `json:"proxy-config"`
 }
