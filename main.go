@@ -26,12 +26,12 @@ func Initialise() {
 	flag.Parse()
 
 	log.SetOutput(os.Stdout)
-	config, err := fetchConfiguration(bindingPort, proxyPort)
+	conf, err := fetchConfiguration(bindingPort, proxyPort)
 	if err != nil {
 		log.Fatal("Configuration could not be found for this service, please make sure you have a valid config file.")
 	}
 
-	_, err = database.CreateConnectionToDbHost(config)
+	_, err = database.CreateConnectionToDbHost(conf)
 
 	if err != nil {
 		log.Fatal("Count not create a connection to the database")
