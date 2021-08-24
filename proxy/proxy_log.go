@@ -1,10 +1,10 @@
-package logging
+package proxy
 
 import (
 	"database/sql"
 	"fmt"
 	"github.com/caybokotze/dbmux/database"
-	"github.com/caybokotze/dbmux/tcp"
+	"github.com/caybokotze/dbmux/logging"
 	"log"
 	"strconv"
 	"strings"
@@ -84,59 +84,59 @@ func sqlEscape(s string) string {
 }
 
 type ProxyLogConfiguration struct {
-	source       *tcp.Connection
-	destination  *tcp.Connection
-	bufferSize   uint
-	verbosity    bool
-	databaseHost *sql.DB
+	Source       *Connection
+	Destination  *Connection
+	BufferSize   uint
+	Verbosity    bool
+	DatabaseHost *sql.DB
 }
 
 func ProxyLog(config ProxyLogConfiguration) {
-	buffer := make([]byte, config.bufferSize)
+	buffer := make([]byte, config.BufferSize)
 	var sqlInfo Query
-	sqlInfo.ClientIP, sqlInfo.ClientPort = ipPortFromNetAddr(config.source.Connection.RemoteAddr().String())
-	sqlInfo.ServerIP, sqlInfo.ServerPort = ipPortFromNetAddr(config.destination.Connection.RemoteAddr().String())
-	_, sqlInfo.BindPort = ipPortFromNetAddr(config.source.Connection.LocalAddr().String())
+	sqlInfo.ClientIP, sqlInfo.ClientPort = ipPortFromNetAddr(config.Source.Connection.RemoteAddr().String())
+	sqlInfo.ServerIP, sqlInfo.ServerPort = ipPortFromNetAddr(config.Destination.Connection.RemoteAddr().String())
+	_, sqlInfo.BindPort = ipPortFromNetAddr(config.Source.Connection.LocalAddr().String())
 
 	for {
-		n, err := config.source.Read(buffer)
+		n, err := config.Source.Read(buffer)
 		if err != nil {
 			return
 		}
 		if n >= 5 {
 			var verboseStr string
 			switch buffer[4] {
-			case comQuit:
+			case logging.ComQuit:
 				verboseStr = fmt.Sprintf("From %s To %s; Quit: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, "user quit")
 				sqlInfo.SqlType = "Quit"
-			case comInitDB:
+			case logging.ComInitDB:
 				verboseStr = fmt.Sprintf("From %s To %s; schema: use %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Schema"
-			case comQuery:
+			case logging.ComQuery:
 				verboseStr = fmt.Sprintf("From %s To %s; Query: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Query"
-			case comCreateDB:
+			case logging.ComCreateDB:
 				verboseStr = fmt.Sprintf("From %s To %s; CreateDB: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "CreateDB"
-			case comDropDB:
+			case logging.ComDropDB:
 				verboseStr = fmt.Sprintf("From %s To %s; DropDB: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "DropDB"
-			case comRefresh:
+			case logging.ComRefresh:
 				verboseStr = fmt.Sprintf("From %s To %s; Refresh: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Refresh"
-			case comStmtPrepare:
+			case logging.ComStmtPrepare:
 				verboseStr = fmt.Sprintf("From %s To %s; Prepare Query: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Prepare Query"
-			case comStmtExecute:
+			case logging.ComStmtExecute:
 				verboseStr = fmt.Sprintf("From %s To %s; Prepare Args: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Prepare Args"
-			case comProcessKill:
+			case logging.ComProcessKill:
 				verboseStr = fmt.Sprintf("From %s To %s; Kill: kill conntion %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Kill"
 			default:
 			}
 
-			if config.verbosity {
+			if config.Verbosity {
 				log.Print(verboseStr)
 			}
 
@@ -146,12 +146,12 @@ func ProxyLog(config ProxyLogConfiguration) {
 				sqlInfo.SqlString = convertToUnixLine(sqlEscape(string(buffer[5:n])))
 			}
 
-			if !strings.EqualFold(sqlInfo.SqlType, "") && config.databaseHost != nil {
-				insertLog(config.databaseHost, &sqlInfo)
+			if !strings.EqualFold(sqlInfo.SqlType, "") && config.DatabaseHost != nil {
+				insertLog(config.DatabaseHost, &sqlInfo)
 			}
 		}
 
-		_, err = config.destination.Write(buffer[0:n])
+		_, err = config.Destination.Write(buffer[0:n])
 		if err != nil {
 			return
 		}

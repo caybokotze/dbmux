@@ -1,17 +1,16 @@
-package tcp
+package proxy
 
 import (
-	"github.com/caybokotze/dbmux/proxy"
 	"net"
 	"time"
 )
 
 type Connection struct {
 	Connection net.Conn
-	pool       *proxy.Recycler
+	pool       *Recycler
 }
 
-func NewTcpConnection(conn net.Conn, pool *proxy.Recycler) *Connection {
+func NewTcpConnection(conn net.Conn, pool *Recycler) *Connection {
 	return &Connection{
 		Connection: conn,
 		pool:       pool,

@@ -1,8 +1,6 @@
 package proxy
 
 import (
-	"github.com/caybokotze/dbmux/logging"
-	"github.com/caybokotze/dbmux/tcp"
 	"io"
 	"log"
 	"net"
@@ -50,13 +48,16 @@ func CreateNewProxy(arguments Arguments) *Proxy {
 
 /* - Proxy struct helpers - */
 
-func (t *Proxy) pipeTCPConnection(dst, src *tcp.Connection, c chan int64, tag string) {
+func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string) {
 	defer func() {
 		dst.CloseWrite()
 		dst.CloseRead()
 	}()
 	if strings.EqualFold(tag, "send") {
-		logging.ProxyLog(src, dst, t.bufferSize)
+		ProxyLog(ProxyLogConfiguration{
+			Source: src,
+			Destination: dst,
+		})
 		c <- 0
 	} else {
 		n, err := io.Copy(dst, src)
@@ -83,9 +84,9 @@ func (t *Proxy) transport(proxy net.Conn) {
 	var readBytes, writeBytes int64
 
 	atomic.AddInt32(&t.sessionsCount, 1)
-	var serverConnection, proxyConnection *tcp.Connection
-	serverConnection = tcp.NewTcpConnection(proxy, t.pool)
-	proxyConnection = tcp.NewTcpConnection(databaseConnection, t.pool)
+	var serverConnection, proxyConnection *Connection
+	serverConnection = NewTcpConnection(proxy, t.pool)
+	proxyConnection = NewTcpConnection(databaseConnection, t.pool)
 
 	go t.pipeTCPConnection(serverConnection, proxyConnection, writeChan, "send")
 	go t.pipeTCPConnection(proxyConnection, serverConnection, readChan, "receive")
