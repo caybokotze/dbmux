@@ -3,6 +3,6 @@ module github.com/caybokotze/dbmux
 go 1.16
 
 require (
-	github.com/arstercz/goconfig v0.0.0-20150123071707-b83f50b64687
+	github.com/caybokotze/go-testing-kit v0.0.0-20210824070338-17fc8771785e
 	github.com/go-sql-driver/mysql v1.6.0
 )

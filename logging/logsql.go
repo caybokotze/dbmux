@@ -147,7 +147,7 @@ func ProxyLog(config ProxyLogConfiguration) {
 			}
 
 			if !strings.EqualFold(sqlInfo.SqlType, "") && config.databaseHost != nil {
-				database.InsertLog(config.databaseHost, &sqlInfo)
+				insertLog(config.databaseHost, &sqlInfo)
 			}
 		}
 
@@ -156,4 +156,25 @@ func ProxyLog(config ProxyLogConfiguration) {
 			return
 		}
 	}
+}
+
+func insertLog(db *sql.DB, t *Query) bool {
+	insertSql := `
+	insert into query_log(bindport, client, client_port, server, server_port, sql_type, 
+	sql_string, create_time) values (%d, '%s', %d, '%s', %d, '%s', '%s', now())
+	`
+	_, err := database.ExecQuery(db, fmt.Sprintf(
+		insertSql,
+		t.BindPort,
+		t.ClientIP,
+		t.ClientPort,
+		t.ServerIP,
+		t.ServerPort,
+		t.SqlType,
+		t.SqlString))
+
+	if err != nil {
+		return false
+	}
+	return true
 }
