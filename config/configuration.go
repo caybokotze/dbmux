@@ -7,7 +7,7 @@ import (
 )
 
 func GetConfiguration() (config Configuration, err error) {
-	jsonFile, err := os.Open("config.json")
+	jsonFile, err := os.Open("./../config.json")
 	if err != nil {
 		return Configuration{}, err
 	}
@@ -27,6 +27,7 @@ type Configuration struct {
 	DbBuffer         uint   `json:"db-buffer"`
 	DbSchema         string `json:"db-schema"`
 	VerbosityEnabled bool   `json:"verbosity"`
+	ThreadPoolCount  uint   `json:"thread-pool-count"`
 }
 
 type File struct {
