@@ -83,7 +83,7 @@ func sqlEscape(s string) string {
 	return string(desc[0:j])
 }
 
-type ProxyLogConfiguration struct {
+type LogConfiguration struct {
 	Source       *Connection
 	Destination  *Connection
 	BufferSize   uint
@@ -91,7 +91,7 @@ type ProxyLogConfiguration struct {
 	DatabaseHost *sql.DB
 }
 
-func ProxyLog(config ProxyLogConfiguration) {
+func Log(config LogConfiguration) {
 	buffer := make([]byte, config.BufferSize)
 	var sqlInfo Query
 	sqlInfo.ClientIP, sqlInfo.ClientPort = ipPortFromNetAddr(config.Source.Connection.RemoteAddr().String())

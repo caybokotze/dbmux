@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"database/sql"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -13,9 +15,11 @@ import (
 type Proxy struct {
 	proxyTcp,
 	databaseTcp *net.TCPAddr
+	databaseHost *sql.DB
 	sessionsCount         int32
 	pool                  *Recycler
 	bufferSize            uint
+	verbosity bool
 }
 
 type Arguments struct {
@@ -24,18 +28,29 @@ type Arguments struct {
 	BufferSize     uint
 	ThreadPoolSize uint32
 	VerbosityEnabled bool
+	DatabaseHost *sql.DB
 }
 
+/*
+-------------------------------------------------------------------------------------------------------
+This function resolves for the running mysql connection as well as the proxy port specified.
+This is required to determine whether something is making use of the port or not.
+-------------------------------------------------------------------------------------------------------
+ */
 func CreateNewProxy(arguments Arguments) *Proxy {
-	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(arguments.ProxyPort)))
+	var proxyPort = fmt.Sprintf("%s%s", ":", strconv.Itoa(int(arguments.ProxyPort)))
+	proxyTcpAddress, err := net.ResolveTCPAddr("tcp", proxyPort)
 	if err != nil {
-		log.Fatalln("resolve proxyTcp error:", err)
+		log.Fatalln("Could not resolve the host port:", err)
 	}
+	log.Printf("Proxy running on port: %s", strconv.Itoa(int(arguments.ProxyPort)))
 
-	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", strconv.Itoa(int(arguments.HostPort)))
+	var hostPort = fmt.Sprintf("%s%s", ":", strconv.Itoa(int(arguments.HostPort)))
+	databaseTcpAddress, err := net.ResolveTCPAddr("tcp", hostPort)
 	if err != nil {
-		log.Fatalln("resolve backend error:", err)
+		log.Fatalln("could not resolve the proxy port:", err)
 	}
+	log.Printf("Connected to host on port: %s", strconv.Itoa(int(arguments.HostPort)))
 
 	return &Proxy{
 		proxyTcp:      proxyTcpAddress,
@@ -54,9 +69,12 @@ func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string
 		dst.CloseRead()
 	}()
 	if strings.EqualFold(tag, "send") {
-		ProxyLog(ProxyLogConfiguration{
+		Log(LogConfiguration{
 			Source: src,
 			Destination: dst,
+			BufferSize: t.bufferSize,
+			Verbosity: t.verbosity,
+			DatabaseHost: t.databaseHost,
 		})
 		c <- 0
 	} else {
@@ -68,7 +86,7 @@ func (t *Proxy) pipeTCPConnection(dst, src *Connection, c chan int64, tag string
 	}
 }
 
-func (t *Proxy) transport(proxy net.Conn) {
+func (t *Proxy) transportTCPConnection(proxy net.Conn) {
 	start := time.Now()
 	databaseConnection, err := net.DialTCP("tcp", nil, t.databaseTcp)
 	if err != nil {
@@ -88,8 +106,8 @@ func (t *Proxy) transport(proxy net.Conn) {
 	serverConnection = NewTcpConnection(proxy, t.pool)
 	proxyConnection = NewTcpConnection(databaseConnection, t.pool)
 
-	go t.pipeTCPConnection(serverConnection, proxyConnection, writeChan, "send")
-	go t.pipeTCPConnection(proxyConnection, serverConnection, readChan, "receive")
+	go t.pipeTCPConnection(proxyConnection, serverConnection, writeChan, "send")
+	go t.pipeTCPConnection(serverConnection, proxyConnection, readChan, "receive")
 
 	readBytes = <-readChan
 	writeBytes = <-writeChan
@@ -99,6 +117,9 @@ func (t *Proxy) transport(proxy net.Conn) {
 	atomic.AddInt32(&t.sessionsCount, -1)
 }
 
+/*
+Checks that the TCP port is not being used by another application before transporting the TCP connection.
+ */
 func (t *Proxy) StartTcpProxying() {
 	ln, err := net.ListenTCP("tcp", t.proxyTcp)
 	if err != nil {
@@ -114,6 +135,6 @@ func (t *Proxy) StartTcpProxying() {
 		}
 		log.Printf("client: %s ==> %s", conn.RemoteAddr().String(),
 			conn.LocalAddr().String())
-		go t.transport(conn)
+		go t.transportTCPConnection(conn)
 	}
 }
