@@ -58,6 +58,8 @@ func CreateNewProxy(arguments Arguments) *Proxy {
 		sessionsCount: 0,
 		pool:          newRecycler(arguments.ThreadPoolSize),
 		bufferSize:    arguments.BufferSize,
+		verbosity: arguments.VerbosityEnabled,
+		databaseHost: arguments.DatabaseHost,
 	}
 }
 

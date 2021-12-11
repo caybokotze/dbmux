@@ -105,7 +105,7 @@ func Log(config LogConfiguration) {
 		}
 		if n >= 5 {
 			var verboseStr string
-			switch buffer[4] {
+			switch buffer[1] {
 			case logging.ComQuit:
 				verboseStr = fmt.Sprintf("From %s To %s; Quit: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, "user quit")
 				sqlInfo.SqlType = "Quit"
@@ -113,7 +113,7 @@ func Log(config LogConfiguration) {
 				verboseStr = fmt.Sprintf("From %s To %s; schema: use %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
 				sqlInfo.SqlType = "Schema"
 			case logging.ComQuery:
-				verboseStr = fmt.Sprintf("From %s To %s; Query: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
+				verboseStr = fmt.Sprintf("From %s To %s; Query: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer))
 				sqlInfo.SqlType = "Query"
 			case logging.ComCreateDB:
 				verboseStr = fmt.Sprintf("From %s To %s; CreateDB: %s\n", sqlInfo.ClientIP, sqlInfo.ServerIP, string(buffer[5:n]))
@@ -146,9 +146,9 @@ func Log(config LogConfiguration) {
 				sqlInfo.SqlString = convertToUnixLine(sqlEscape(string(buffer[5:n])))
 			}
 
-			if !strings.EqualFold(sqlInfo.SqlType, "") && config.DatabaseHost != nil {
-				insertLog(config.DatabaseHost, &sqlInfo)
-			}
+			//if !strings.EqualFold(sqlInfo.SqlType, "") && config.DatabaseHost != nil {
+			//	insertLog(config.DatabaseHost, &sqlInfo)
+			//}
 		}
 
 		_, err = config.Destination.Write(buffer[0:n])
