@@ -1,32 +1,40 @@
 # DbMux - *database multiplexer*
-_A distributed reverse proxy dbms load balancing multiplexer as a service._
+_Distributed reverse proxy dbms load balancing multiplexer_
 
-## What does DbMux currently do?
-DbMux currently can act as a proxy for your mysql connection. So if you want to tunnel your mysql connection through from 3306 to 3308 on the server you are running mysql, you can use dbmux to do that.
+## A short explanation
+DbMux is a database reverse proxy multiplexer which allows you to proxy your mysql db connections to multiple mysql instances. The final goal for this project is to create a tool which can assist with TCP level query caching, database sharding, database syncing and connection multiplexing. 
 
-## What do I want the project to become?
-### 1.) A tool for database replication. 
-I have looked into this quite a bit and I think this service could be of use for workloads that require an element of database replication be that for redundancy, security or anything else. For me the advantage of doing this over TCP means you can achive this very quickly. You can replicate a query/command to 2 or multiple databases, even across multiple server environments.
+### What is TCP caching?
 
-### 2.) A tool to manage database partitioning and sharding.
-If the db proxy acts as the ow-level middleman (over TCP) between the client and the database there is quite a lot of granular contorl this would allow you to have. You can hash common queries and target several mysql connections on any other environment.
+The basic idea behind TCP level caching is to 'query' data on the TCP level for a specified amount of time. The tables which you would like to have cached can be set in the `appconfig.json` file. The advantages of this strategy is to allow caching to multiple client connections without the need for configuring third-party tools (like redis) on every endpoint where caching is required.
+### What is multiplexing?
+The connection multiplexer is responsible for proxying / tunneling database tcp connections to other instances for real-time data replication and potentially database sharding.
+### What is Sharding?
+Database sharding is when you distribute a single data set across multiple databases, which could be running on different machines. DbMux would be responsible for managing those connections and load-balancing the requests made to each database instance.
+### What is database syncing?
+Database syncing can be configured to sync the datasets of multiple database instances. This feature can be used with or without database sharding activated.
 
-### 3.) Managing distributed workloads.
-Having applications and workflows running across multiple servers or containers is becoming more and more common. DbMux could become a conventiant way to manage a shared single source of truth where that is required. I also belive this could eventually be achieved with relative ease and remain very performant.
+## The core idea behind db-mux
 
-### 4.) Caching.
-The db-mux service can manage your database caching on the TCP level and do so very quickly for frequently used queries and commands.
+Provide large and small users alike with a means to easily be able to solve some of the biggest pain-points in large-scale distributed systems development.
 
-## My vision for dbmux.
-I beleive DbMux could be a useful tool for companies where managing diverse and complex workloads can become difficult to manage. It could be a great option for comapnies that want to make use of large multi-cluster environments and need something that can manage that database workload automatically and very effectively. I think dbmux can become that tool with enough time and effort spent. It could solve some of those big complicated problems without thinking about it too much. Caching, Sharding, Replciation and shared state between multiple services.
+## Supported databases
+- MySql
 
-## Why is this written in Go?
-My short explination is becuase Go handles concurrency quite well and this will be handy when managing multiple SQL Clients at the same time and managing that workload effectively. It also makes it very easy to manage TCP clients / connections. It is relatively low level and a quick programming langauge and serves this type of use case quite well. 
+(Hopefully others will be added soonish)
+
+## Why GoLang?
+Go is a relatively low-level language and handles concurrency quite well, as well as being easy to read and understand. Go is also quite popular for these types of applications because of those qualities. Examples include 
+The short and sweet is that Go is great for handling concurrency. In large scale production environments that is very important, if we are trying to manage multiple concurrent database requests. It is also really quick and responding to TCP/IP & HTTP requests which also makes it a great option.
 
 ## Development plan
-- [X] TCP Proxy (Currently works without any major issues but tests still need to be written)
-- [ ] Reading / Accessing Commands and queries from the SQL Client.
-- [ ] Caching db queries / commands
-- [ ] Managing database sharding and partitioned environments effectively.
-- [ ] Managing multi cluster environements with many SQL clients and replicating the tool accross multiple server environments.
-- [ ] Supporting more than just MySql, but perhaps also Oracle, MSSql and Postgres.
+
+### Short term goals
+  -[X] Proxy TCP connections for mysql.
+  -[ ] Allow for the caching of queries by hashing and caching the query response in memory.
+  -[ ] Replicate inserts onto two different versions of mysql.
+
+### Long term goals
+
+  -[ ] Implement sharding and partitioning strategies.
+  -[ ] Load-balance database requests between multiple instances.

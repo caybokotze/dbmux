@@ -1,4 +1,4 @@
-package main
+package proxy
 
 import (
 	"container/list"
@@ -10,13 +10,13 @@ type recyclerItem struct {
 	buf  []byte
 }
 
-type recycler struct {
+type Recycler struct {
 	q                  *list.List
 	takeChan, giveChan chan []byte
 }
 
-func NewRecycler(size uint32) *recycler {
-	r := &recycler{
+func newRecycler(size uint32) *Recycler {
+	r := &Recycler{
 		q:        new(list.List),
 		takeChan: make(chan []byte),
 		giveChan: make(chan []byte),
@@ -25,7 +25,7 @@ func NewRecycler(size uint32) *recycler {
 	return r
 }
 
-func (r *recycler) cycle(size uint32) {
+func (r *Recycler) cycle(size uint32) {
 	for {
 		if r.q.Len() == 0 {
 			//put to front so that we always use the most recent buf
@@ -54,10 +54,10 @@ func (r *recycler) cycle(size uint32) {
 	}
 }
 
-func (r *recycler) take() []byte {
+func (r *Recycler) take() []byte {
 	return <-r.takeChan
 }
 
-func (r *recycler) give(b []byte) {
+func (r *Recycler) give(b []byte) {
 	r.giveChan <- b
 }

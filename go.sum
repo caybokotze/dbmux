@@ -1,4 +1,4 @@
-github.com/arstercz/goconfig v0.0.0-20150123071707-b83f50b64687 h1:g/0pmoV6ftTqLMRVThzi8S1VNiRzjQg/AKm+Y8JrBM0=
-github.com/arstercz/goconfig v0.0.0-20150123071707-b83f50b64687/go.mod h1:URZY2HL6NzKbPFW+DxNxldlj94ooyvVAVyyH+MEd2M8=
+github.com/caybokotze/go-testing-kit v0.0.0-20210824070752-b638fd0bbbf9 h1:DpGlLdyYLGZ/u3wduLYGnm5FusjHwo+NgWD2z+4WIM8=
+github.com/caybokotze/go-testing-kit v0.0.0-20210824070752-b638fd0bbbf9/go.mod h1:h5uLl5JtEgBCwOEES8fIQZbhoiw7W2XDm1c+TxHAhlo=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
