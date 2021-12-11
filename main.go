@@ -22,7 +22,7 @@ var verbosityEnabled = false
 func Initialise() {
 	hostPort := flag.Uint("host", 3306, "Specify the port the sql server is running on")
 	proxyPort := flag.Uint("proxy", 3308, "Specify the port where the current server instance is running")
-	flag.BoolVar(&verbosityEnabled, "enable-verbosity", false, "Enable verbosity to see the output in terminal")
+	flag.BoolVar(&verbosityEnabled, "enable-verbosity", true, "Enable verbosity to see the output in terminal")
 	flag.Parse()
 	log.SetOutput(os.Stdout)
 	conf, err := fetchConfiguration(hostPort, proxyPort)
