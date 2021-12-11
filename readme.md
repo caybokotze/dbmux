@@ -30,11 +30,11 @@ The short and sweet is that Go is great for handling concurrency. In large scale
 ## Development plan
 
 ### Short term goals
-  -[X] Proxy TCP connections for mysql.
-  -[ ] Allow for the caching of queries by hashing and caching the query response in memory.
-  -[ ] Replicate inserts onto two different versions of mysql.
+  - [X] Proxy TCP connections for mysql.
+  - [ ] Allow for the caching of queries by hashing and caching the query response in memory.
+  - [ ] Replicate inserts onto two different versions of mysql.
 
 ### Long term goals
 
-  -[ ] Implement sharding and partitioning strategies.
-  -[ ] Load-balance database requests between multiple instances.
+  - [ ] Implement sharding and partitioning strategies.
+  - [ ] Load-balance database requests between multiple instances.
